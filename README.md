@@ -1,2 +1,3 @@
-# mocksocial
-open source social media screenshot generator
+# Mock Social
+
+Create screenshots of popular apps. open source alternative of getmockly.com
