@@ -48,8 +48,8 @@ const exampleMessage = {
 function App() {
   const { sender, receiver, messages, addMessage } = useStore();
   return (
-    <div className="flex" style={{ height: "100vh" }}>
-      <div className="flex flex-1 flex-col gap-4 text-left m-4">
+    <div className="flex flex-col lg:flex-row" style={{ height: "100vh" }}>
+      <div className="flex lg:flex-1 min-w-sm flex-col gap-4 text-left m-4">
         <div className="flex">
           <SelectApp />
         </div>
@@ -62,7 +62,7 @@ function App() {
           <Person person={sender} />
         </div>
         <Separator />
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-4">
           <h3>Messages</h3>
           {Object.values(messages).map((message) => (
             <Message
@@ -77,11 +77,11 @@ function App() {
         </div>
       </div>
       <Separator orientation="vertical" />
-      <div className="flex flex-col flex-3 bg-gray-50">
+      <div className="flex flex-col items-center justify-between flex-3 bg-gray-50 p-4">
+        <Preview />
         <div>
           <Download />
         </div>
-        <Preview />
       </div>
     </div>
   );
@@ -117,7 +117,7 @@ function Person({ person }) {
 
   return (
     <div className="flex gap-2">
-      <img src={person.imgUrl}></img>
+      <ProfilePicture person={person} />
       <Input
         onChange={(e) => changeName(e.target.value)}
         value={person.name}
@@ -147,7 +147,6 @@ function Message({ message, person }) {
   }
 
   function addImage(file) {
-    console.log(file);
     if (!file) return;
     const url = URL.createObjectURL(file);
     const newMessage = { ...message, imgUrl: url };
@@ -240,9 +239,10 @@ function Message({ message, person }) {
 }
 
 function Download() {
-  const ref = useStore.getState().exportRef;
   async function downloadPreview() {
-    const url = await toPng(ref.current, { pixelRatio: 2 });
+    const url = await toPng(document.getElementById("preview"), {
+      pixelRatio: 2,
+    });
     const a = document.createElement("a");
     a.href = url;
     a.download = "export.png";
@@ -256,13 +256,9 @@ function Download() {
 }
 
 function Preview() {
-  const setRef = (el) => {
-    if (!useStore.getState().exportRef) useStore.setState({ exportRef: el });
-  };
-
   return (
-    <div ref={setRef} className="w-md  bg-white">
-      <AspectRatio ratio={9 / 16} className="flex flex-col m-4">
+    <div id="preview" className="w-[360px]  bg-white">
+      <AspectRatio ratio={9 / 16} className="flex flex-col">
         <Top />
         <Middle />
         <Bottom />
@@ -274,8 +270,11 @@ function Preview() {
 function Top() {
   const receiver = useStore.getState().receiver;
   return (
-    <div className="flex h-2/12 justify-between w-full items-center p-4">
-      <ChevronLeftIcon />
+    <div
+      className="flex h-2/12 justify-between w-full items-center px-4"
+      style={{ backgroundColor: "#f7f7f7" }}
+    >
+      <ChevronLeftIcon stroke="#007aff" />
       <div className="flex flex-col text-center">
         <img
           className="h-12 w-12 rounded-full object-cover"
@@ -283,7 +282,7 @@ function Top() {
         />
         <div className="text-xs">{receiver.name}</div>
       </div>
-      <VideoIcon />
+      <VideoIcon stroke="#007aff" />
     </div>
   );
 }
@@ -307,14 +306,14 @@ function Middle() {
               <img src={message.imgUrl} className="object-cover rounded-2xl" />
             </AspectRatio>
           )}
-          {message.text}
+          <div className="text-sm">{message.text}</div>
         </div>
       </div>
     );
   }
 
   return (
-    <ScrollArea className="flex flex-col h-8/12 w-full gap-2">
+    <ScrollArea className="flex flex-col h-9/12 w-full gap-2 p-4">
       <div className="text-xs font-semibold text-gray-400 text-center">
         Tue, 2 Dec
       </div>
@@ -326,12 +325,47 @@ function Middle() {
 }
 function Bottom() {
   return (
-    <div className="flex h-2/12 items-center gap-4 ">
-      <PlusCircle />
-      <div className="flex flex-1 justify-between items-center outline outline-gray-100 p-1 rounded-full">
-        <p className="text-xs ml-2">iMessage</p>
-        <MicIcon />
+    <div className="flex h-1/12 items-center gap-4 p-4">
+      <PlusCircle stroke="gray" />
+      <div className="flex flex-1 justify-between items-center outline outline-gray-100 p-2 rounded-full">
+        <p className="text-xs ml-2 text-gray-400">iMessage</p>
+        <MicIcon size={16} stroke="gray" />
       </div>
+    </div>
+  );
+}
+
+function ProfilePicture({ person }) {
+  const { updatePerson } = useStore();
+  const inputRef = useRef();
+
+  const pick = () => inputRef.current.click();
+
+  function addImage(file) {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const newPerson = { ...person, imgUrl: url };
+    updatePerson(newPerson);
+  }
+
+  function removeImage() {
+    const url = person.imgUrl;
+    if (url) URL.revokeObjectURL(url);
+    const newPerson = { ...person, imgUrl: null };
+    updatePerson(newPerson);
+  }
+
+  return (
+    <div className="cursor-pointer" onClick={pick}>
+      <img src={person.imgUrl} className="h-12 w-12" />
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => addImage(e.target.files[0])}
+      />
     </div>
   );
 }
