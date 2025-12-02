@@ -6,12 +6,12 @@ const useStore = create(
     sender: {
       userId: 0,
       name: "you",
-      imgUrl: "vite.svg",
+      imgUrl: "default_pfp.svg",
     },
     receiver: {
       userId: 1,
       name: "friend",
-      imgUrl: "vite.svg",
+      imgUrl: "default_pfp.svg",
     },
     messages: {
       0: {

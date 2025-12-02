@@ -49,33 +49,37 @@ function App() {
   const { sender, receiver, messages, addMessage } = useStore();
   return (
     <div className="flex flex-col lg:flex-row" style={{ height: "100vh" }}>
-      <div className="flex lg:flex-1 min-w-sm flex-col gap-4 text-left m-4">
-        <div className="flex">
-          <SelectApp />
+      <ScrollArea>
+        <div className="flex w-sm flex-col gap-4 text-left m-4">
+          <div className="text-xl font-bold">Mock Social</div>
+          <div className="flex flex-col gap-2">
+            <div className="text-md font-semibold">App</div>
+            <SelectApp />
+          </div>
+          <Separator />
+          <div className="flex flex-col gap-2">
+            <div className="text-md font-semibold">People</div>
+            <p>Receiver</p>
+            <Person person={receiver} />
+            <p>Sender</p>
+            <Person person={sender} />
+          </div>
+          <Separator />
+          <div className="flex flex-col gap-4">
+            <div className="text-md font-semibold">Messages</div>
+            {Object.values(messages).map((message) => (
+              <Message
+                key={message.messageId}
+                message={message}
+                person={message.by === 0 ? sender : receiver}
+              />
+            ))}
+            <Button variant="secondary" onClick={addMessage}>
+              <PlusIcon /> Message
+            </Button>
+          </div>
         </div>
-        <Separator />
-        <div className="flex flex-col gap-2">
-          <div className="text-lg font-semibold">People</div>
-          <p>Receiver</p>
-          <Person person={receiver} />
-          <p>Sender</p>
-          <Person person={sender} />
-        </div>
-        <Separator />
-        <div className="flex flex-col gap-4">
-          <h3>Messages</h3>
-          {Object.values(messages).map((message) => (
-            <Message
-              key={message.messageId}
-              message={message}
-              person={message.by === 0 ? sender : receiver}
-            />
-          ))}
-          <Button variant="secondary" onClick={addMessage}>
-            <PlusIcon /> Message
-          </Button>
-        </div>
-      </div>
+      </ScrollArea>
       <Separator orientation="vertical" />
       <div className="flex flex-col items-center justify-between flex-3 bg-gray-50 p-4">
         <Preview />
@@ -89,18 +93,19 @@ function App() {
 export default App;
 
 export function SelectApp() {
+  const options = ["Instagram", "Telegram", "Whatsapp", "iMessage", "X"];
   return (
-    <Select>
+    <Select defaultValue="iMessage">
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select app" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectItem value="apple">Instagram</SelectItem>
-          <SelectItem value="banana">Telegram</SelectItem>
-          <SelectItem value="blueberry">Whatsapp</SelectItem>
-          <SelectItem value="grapes">iMessage</SelectItem>
-          <SelectItem value="pineapple">X</SelectItem>
+          {options.map((option, idx) => (
+            <SelectItem key={idx} value={option}>
+              {option}
+            </SelectItem>
+          ))}
         </SelectGroup>
       </SelectContent>
     </Select>
@@ -142,7 +147,12 @@ function Message({ message, person }) {
   }
 
   function changePerson(newUserId) {
-    const newMessage = { ...message, userId: newUserId };
+    const newMessage = { ...message, by: newUserId };
+    updateMessage(newMessage);
+  }
+
+  function changeTime(newTime) {
+    const newMessage = { ...message, at: newTime };
     updateMessage(newMessage);
   }
 
@@ -160,12 +170,12 @@ function Message({ message, person }) {
     updateMessage(newMessage);
   }
 
-  function SelectPerson({ person }) {
+  function SelectPerson({ message }) {
     const { sender, receiver } = useStore();
 
     return (
       <Select
-        defaultValue={`${person.userId}`}
+        defaultValue={`${message.by}`}
         onValueChange={(v) => changePerson(v)}
       >
         <SelectTrigger className="w-1/4">
@@ -188,8 +198,14 @@ function Message({ message, person }) {
       <img className="h-12 w-12" src={person.imgUrl}></img>
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex justify-between">
-          <SelectPerson person={person} />
-          <div className="text-xs text-gray-400">{message.at}</div>
+          <SelectPerson message={message} />
+          <div className="text-xs text-gray-400">
+            <Input
+              placeholder="dd/mm/yyyy hh:mm:ss"
+              value={message.at}
+              onChange={(e) => changeTime(e.target.value)}
+            ></Input>
+          </div>
           <div className="flex opacity-0 group-hover:opacity-100 transition">
             <Button
               variant="ghost"
@@ -250,7 +266,7 @@ function Download() {
   }
   return (
     <Button onClick={downloadPreview}>
-      Download <DownloadIcon />
+      <DownloadIcon /> Download
     </Button>
   );
 }
@@ -313,13 +329,15 @@ function Middle() {
   }
 
   return (
-    <ScrollArea className="flex flex-col h-9/12 w-full gap-2 p-4">
-      <div className="text-xs font-semibold text-gray-400 text-center">
-        Tue, 2 Dec
+    <ScrollArea className="h-9/12">
+      <div className="flex flex-col  w-full gap-1 p-4">
+        <div className="text-xs font-semibold text-gray-400 text-center">
+          {messages[messageOrder[0]].at}
+        </div>
+        {messageOrder.map((id, idx) => (
+          <Message key={id} message={messages[id]} />
+        ))}
       </div>
-      {messageOrder.map((id, idx) => (
-        <Message key={id} message={messages[id]} />
-      ))}
     </ScrollArea>
   );
 }
@@ -356,9 +374,8 @@ function ProfilePicture({ person }) {
   }
 
   return (
-    <div className="cursor-pointer" onClick={pick}>
-      <img src={person.imgUrl} className="h-12 w-12" />
-
+    <div className="cursor-pointer h-12 w-12" onClick={pick}>
+      <img src={person.imgUrl} />
       <input
         ref={inputRef}
         type="file"
