@@ -3,6 +3,7 @@ import { immer } from "zustand/middleware/immer";
 
 const useStore = create(
   immer((set) => ({
+    selectedApp: "iMessage",
     sender: {
       userId: 0,
       name: "you",
@@ -32,6 +33,11 @@ const useStore = create(
     messageOrder: [0, 1],
     exportRef: null,
     inc: () => set((s) => ({ count: s.count + 1 })),
+    setSelectedApp: (app) =>
+      set((s) => {
+        console.log(app);
+        s.selectedApp = app;
+      }),
     updatePerson: (person) =>
       set((s) => {
         person.userId === 0 ? (s.sender = person) : (s.receiver = person);

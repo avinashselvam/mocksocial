@@ -49,11 +49,26 @@ export function Middle() {
     );
   }
 
+  function formatTime(ts) {
+    const d = new Date(ts);
+    const weekday = d.toLocaleString("en-US", { weekday: "short" });
+    const day = d.getDate();
+    const month = d.toLocaleString("en-US", { month: "short" });
+    const time = d.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    const out = `${weekday}, ${day} ${month} at ${time}`;
+    return out;
+  }
+
   return (
     <ScrollArea className="h-9/12">
-      <div className="flex flex-col  w-full gap-1 p-4">
-        <div className="text-xs font-semibold text-gray-400 text-center">
-          {messages[messageOrder[0]].at}
+      <div className="flex flex-col w-full gap-1 p-4">
+        <div className="text-[10px]  text-gray-400 text-center">
+          {formatTime(messages[messageOrder[0]].at)}
         </div>
         {messageOrder.map((id, idx) => (
           <Message key={id} message={messages[id]} />

@@ -7,7 +7,7 @@ import {
   PlusCircle,
   MicIcon,
   DownloadIcon,
-  Plus,
+  PenIcon,
   PlusIcon,
 } from "lucide-react";
 
@@ -41,6 +41,12 @@ import {
   Bottom as InstagramBottom,
 } from "@/components/preview/instagram";
 
+import {
+  Top as TelegramTop,
+  Middle as TelegramMiddle,
+  Bottom as TelegramBottom,
+} from "@/components/preview/telegram";
+
 import "./App.css";
 
 const exampleUser = {
@@ -60,10 +66,19 @@ const exampleMessage = {
 function App() {
   const { sender, receiver, messages, addMessage } = useStore();
   return (
-    <div className="flex flex-col lg:flex-row" style={{ height: "100vh" }}>
+    <div className="flex flex-col lg:flex-row lg:h-screen">
       <ScrollArea>
         <div className="flex w-sm flex-col gap-4 text-left m-4">
-          <div className="text-xl font-bold">Mock Social</div>
+          <div>
+            <div className="text-xl font-bold">Mock Social</div>
+            <div className="flex text-xs text-gray-500 gap-1">
+              <p>by</p>
+              <a href="https://x.com/naaavinash" className="underline">
+                @naaavinash
+              </a>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-2">
             <div className="text-md font-semibold">App</div>
             <SelectApp />
@@ -71,9 +86,9 @@ function App() {
           <Separator />
           <div className="flex flex-col gap-2">
             <div className="text-md font-semibold">People</div>
-            <p>Receiver</p>
+            <p className="text-sm">Receiver</p>
             <Person person={receiver} />
-            <p>Sender</p>
+            <p className="text-sm">Sender</p>
             <Person person={sender} />
           </div>
           <Separator />
@@ -93,7 +108,7 @@ function App() {
         </div>
       </ScrollArea>
       <Separator orientation="vertical" />
-      <div className="flex flex-col items-center justify-between flex-3 bg-gray-50 p-4">
+      <div className="flex flex-col items-center justify-between flex-3 bg-gray-50 p-4 gap-4">
         <Preview />
         <div>
           <Download />
@@ -105,9 +120,11 @@ function App() {
 export default App;
 
 export function SelectApp() {
-  const options = ["Instagram", "Telegram", "Whatsapp", "iMessage", "X"];
+  const { setSelectedApp } = useStore();
+  const options = ["Instagram", "Telegram", "iMessage"]; //, "Whatsapp", "X"];
+  const icons = ["instagram.svg", "telegram.svg", "imessage.svg"];
   return (
-    <Select defaultValue="iMessage">
+    <Select defaultValue="iMessage" onValueChange={(v) => setSelectedApp(v)}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select app" />
       </SelectTrigger>
@@ -115,7 +132,10 @@ export function SelectApp() {
         <SelectGroup>
           {options.map((option, idx) => (
             <SelectItem key={idx} value={option}>
-              {option}
+              <div className="flex items-center gap-2">
+                <img src={icons[idx]} className="h-4" />
+                {option}
+              </div>
             </SelectItem>
           ))}
         </SelectGroup>
@@ -209,13 +229,14 @@ function Message({ message, person }) {
     <div className="group flex flex-row gap-4 items-center">
       <img className="h-12 w-12" src={person.imgUrl}></img>
       <div className="flex flex-1 flex-col gap-2">
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-2">
           <SelectPerson message={message} />
           <div className="text-xs text-gray-400">
             <Input
               placeholder="dd/mm/yyyy hh:mm:ss"
               value={message.at}
               onChange={(e) => changeTime(e.target.value)}
+              className=""
             ></Input>
           </div>
           <div className="flex opacity-0 group-hover:opacity-100 transition">
@@ -285,14 +306,42 @@ function Download() {
 
 function Preview() {
   return (
-    <div id="preview" className="w-[360px]  bg-white">
+    <div id="preview" className="w-[360px] items-center  bg-white">
       <AspectRatio ratio={9 / 16} className="flex flex-col">
-        <InstagramTop />
-        <InstagramMiddle />
-        <InstagramBottom />
+        <Sections />
       </AspectRatio>
     </div>
   );
+}
+
+function Sections() {
+  const { selectedApp } = useStore();
+  switch (selectedApp) {
+    case "Telegram":
+      return (
+        <>
+          <TelegramTop />
+          <TelegramMiddle />
+          <TelegramBottom />
+        </>
+      );
+    case "Instagram":
+      return (
+        <>
+          <InstagramTop />
+          <InstagramMiddle />
+          <InstagramBottom />
+        </>
+      );
+    case "iMessage":
+      return (
+        <>
+          <IMessageTop />
+          <IMessageMiddle />
+          <IMessageBottom />
+        </>
+      );
+  }
 }
 
 function ProfilePicture({ person }) {
@@ -316,8 +365,11 @@ function ProfilePicture({ person }) {
   }
 
   return (
-    <div className="cursor-pointer h-12 w-12" onClick={pick}>
+    <div className="cursor-pointer h-12 w-12 relative" onClick={pick}>
       <img src={person.imgUrl} />
+      <div className="rounded-full absolute bottom-2 right-0 outline p-1 bg-white">
+        <PenIcon size={8} />
+      </div>
       <input
         ref={inputRef}
         type="file"

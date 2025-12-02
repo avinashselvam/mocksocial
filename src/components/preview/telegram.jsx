@@ -9,6 +9,8 @@ import {
   ImageIcon,
   StickerIcon,
   CameraIcon,
+  Pin,
+  ClipboardPaste,
 } from "lucide-react";
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -17,16 +19,20 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export function Top() {
   const receiver = useStore.getState().receiver;
   return (
-    <div className="flex h-1/12 justify-between w-full items-center px-4 border-b-1 border-gray-50">
-      <ChevronLeftIcon />
-      <img
-        className="h-8 w-8 rounded-full object-cover"
-        src={receiver.imgUrl}
-      />
-      <div className="text-sm font-semibold w-2/5">{receiver.name}</div>
-      <PhoneCall />
-      <VideoIcon />
-      <TagIcon />
+    <div className="flex h-1/12 justify-between w-full items-end px-4 py-2 border-b-1 border-gray-50">
+      <div className="flex flex-1 text-sm items-center">
+        <ChevronLeftIcon /> Chats
+      </div>
+      <div className="flex-1 text-center ">
+        <div className="text-sm font-semibold">{receiver.name}</div>
+        <div className="text-xs">online</div>
+      </div>
+      <div className="flex flex-1 justify-end">
+        <img
+          className="h-8 w-8 rounded-full object-cover"
+          src={receiver.imgUrl}
+        />
+      </div>
     </div>
   );
 }
@@ -35,8 +41,8 @@ export function Middle() {
 
   function Message({ message }) {
     const isSent = message.by == 0;
-    const color = isSent ? "white" : "black";
-    const bgColor = isSent ? "#5b51d8" : "#e9e8eb";
+    const color = "black";
+    const bgColor = isSent ? "#e6fdca" : "#e9e8eb";
     const side1 = isSent ? "items-end" : "items-start";
     const side2 = isSent ? "justify-end" : "justify-start";
 
@@ -50,7 +56,7 @@ export function Middle() {
             />
           )}
           <div
-            className={`flex rounded-2xl p-3 py-1`}
+            className={`flex rounded-sm p-3 py-1`}
             style={{ color: color, backgroundColor: bgColor }}
           >
             <div className="text-sm">{message.text}</div>
@@ -60,26 +66,11 @@ export function Middle() {
     );
   }
 
-  function formatTime(ts) {
-    const d = new Date(ts);
-    const weekday = d.toLocaleString("en-US", { weekday: "short" });
-    const day = d.getDate();
-    const month = d.toLocaleString("en-US", { month: "short" });
-    const time = d.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    const out = `${weekday.toUpperCase()} AT ${time}`;
-    return out;
-  }
-
   return (
-    <ScrollArea className="h-10/12">
-      <div className="flex flex-col  w-full gap-1 p-4">
+    <ScrollArea className="h-11/12 bg-[linear-gradient(150deg,#a0be87,#bec896)]">
+      <div className="flex flex-col  w-full gap-1 p-4 ">
         <div className="text-[10px] font-thin text-gray-600 text-center">
-          {formatTime(messages[messageOrder[0]].at)}
+          {messages[messageOrder[0]].at}
         </div>
         {messageOrder.map((id, idx) => (
           <Message key={id} message={messages[id]} />
@@ -90,15 +81,12 @@ export function Middle() {
 }
 export function Bottom() {
   return (
-    <div className="flex h-1/12 items-center gap-4 p-4">
-      <div className="flex flex-1 justify-between items-center bg-gray-50  p-1 rounded-full">
-        <CameraIcon fill="#5b51d8" stroke="var(--color-gray-50)" />
-        <p className="text-sm w-2/5 ml-2">Message...</p>
-        <MicIcon />
-        <ImageIcon />
-        <StickerIcon />
-        <PlusCircle />
+    <div className="flex h-12 items-center gap-1 px-2 absolute bottom-0 left-0 right-0 bg-[#ffffff66]">
+      <CameraIcon />
+      <div className="flex flex-1 justify-between items-center bg-white p-1 border-gray-50 border-1 rounded-full">
+        <p className="text-sm w-2/5 ml-2">Message</p>
       </div>
+      <MicIcon />
     </div>
   );
 }
