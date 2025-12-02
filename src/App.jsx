@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -130,7 +131,8 @@ function Message({ message, person }) {
   // const people = useStore.getState().people;
   const { updateMessage, deleteMessage } = useStore();
 
-  function changePerson() {}
+  const inputRef = useRef();
+  const pick = () => inputRef.current.click();
 
   function changeOrder() {}
 
@@ -139,23 +141,71 @@ function Message({ message, person }) {
     updateMessage(newMessage);
   }
 
-  function addImage() {}
+  function changePerson(newUserId) {
+    const newMessage = { ...message, userId: newUserId };
+    updateMessage(newMessage);
+  }
+
+  function addImage(file) {
+    console.log(file);
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const newMessage = { ...message, imgUrl: url };
+    updateMessage(newMessage);
+  }
+
+  function removeImage() {
+    const url = message.imgUrl;
+    if (url) URL.revokeObjectURL(url);
+    const newMessage = { ...message, imgUrl: null };
+    updateMessage(newMessage);
+  }
+
+  function SelectPerson({ person }) {
+    const { sender, receiver } = useStore();
+
+    return (
+      <Select
+        defaultValue={`${person.userId}`}
+        onValueChange={(v) => changePerson(v)}
+      >
+        <SelectTrigger className="w-1/4">
+          <SelectValue placeholder="by" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value={`${sender.userId}`}>{sender.name}</SelectItem>
+            <SelectItem value={`${receiver.userId}`}>
+              {receiver.name}
+            </SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    );
+  }
 
   return (
     <div className="group flex flex-row gap-4 items-center">
       <img className="h-12 w-12" src={person.imgUrl}></img>
       <div className="flex flex-1 flex-col gap-2">
         <div className="flex justify-between">
-          <div>{person.name}</div>
+          <SelectPerson person={person} />
           <div className="text-xs text-gray-400">{message.at}</div>
           <div className="flex opacity-0 group-hover:opacity-100 transition">
             <Button
               variant="ghost"
               size="icon"
               aria-label="Submit"
-              onClick={addImage}
+              onClick={pick}
             >
               <ImageIcon />
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => addImage(e.target.files[0])}
+              />
             </Button>
             <Separator orientation="vertical" />
             <Button
@@ -172,7 +222,18 @@ function Message({ message, person }) {
           value={message.text}
           onChange={(e) => changeText(e.target.value)}
         ></Input>
-        <img />
+        {message.imgUrl && (
+          <div className="relative">
+            <Button
+              variant="outline"
+              className="absolute left-1 top-1 opacity-0 group-hover:opacity-100"
+              onClick={removeImage}
+            >
+              <TrashIcon />
+            </Button>
+            <img className="w-1/2 h-1/2" src={message.imgUrl} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -213,7 +274,7 @@ function Preview() {
 function Top() {
   const receiver = useStore.getState().receiver;
   return (
-    <div className="flex flex-1 justify-between w-full items-center p-4">
+    <div className="flex h-2/12 justify-between w-full items-center p-4">
       <ChevronLeftIcon />
       <div className="flex flex-col text-center">
         <img
@@ -234,12 +295,18 @@ function Middle() {
     const color = isSent ? "white" : "black";
     const bgColor = isSent ? "#007aff" : "#e9e8eb";
     const side = isSent ? "justify-end" : "justify-start";
+    const widthClass = message.imgUrl ? "w-3/4" : "max-w-3/4";
     return (
       <div className={`flex ${side}`}>
         <div
-          className="rounded-2xl px-3 py-1 max-w-3/4"
+          className={`rounded-2xl p-3 py-1 ${widthClass}`}
           style={{ color: color, backgroundColor: bgColor }}
         >
+          {message.imgUrl && (
+            <AspectRatio ratio={1} className="overflow-hidden py-2">
+              <img src={message.imgUrl} className="object-cover rounded-2xl" />
+            </AspectRatio>
+          )}
           {message.text}
         </div>
       </div>
@@ -247,19 +314,19 @@ function Middle() {
   }
 
   return (
-    <div className="flex flex-col flex-10 w-full gap-1">
+    <ScrollArea className="flex flex-col h-8/12 w-full gap-2">
       <div className="text-xs font-semibold text-gray-400 text-center">
         Tue, 2 Dec
       </div>
       {messageOrder.map((id, idx) => (
         <Message key={id} message={messages[id]} />
       ))}
-    </div>
+    </ScrollArea>
   );
 }
 function Bottom() {
   return (
-    <div className="flex items-center gap-4 ">
+    <div className="flex h-2/12 items-center gap-4 ">
       <PlusCircle />
       <div className="flex flex-1 justify-between items-center outline outline-gray-100 p-1 rounded-full">
         <p className="text-xs ml-2">iMessage</p>
