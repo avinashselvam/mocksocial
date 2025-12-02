@@ -9,6 +9,7 @@ import {
   DownloadIcon,
   PenIcon,
   PlusIcon,
+  MoreVerticalIcon,
 } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
@@ -25,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toPng } from "html-to-image";
 
 import useStore from "./store";
@@ -76,35 +84,45 @@ function App() {
               <a href="https://x.com/naaavinash" className="underline">
                 @naaavinash
               </a>
+              <p>ping if you require an API</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <div className="text-md font-semibold">App</div>
+            {/* <div className="text-md font-semibold">App</div>*/}
             <SelectApp />
           </div>
           <Separator />
-          <div className="flex flex-col gap-2">
-            <div className="text-md font-semibold">People</div>
-            <p className="text-sm">Receiver</p>
-            <Person person={receiver} />
-            <p className="text-sm">Sender</p>
-            <Person person={sender} />
-          </div>
-          <Separator />
-          <div className="flex flex-col gap-4">
-            <div className="text-md font-semibold">Messages</div>
-            {Object.values(messages).map((message) => (
-              <Message
-                key={message.messageId}
-                message={message}
-                person={message.by === 0 ? sender : receiver}
-              />
-            ))}
-            <Button variant="secondary" onClick={addMessage}>
-              <PlusIcon /> Message
-            </Button>
-          </div>
+          <Tabs defaultValue="people">
+            <TabsList>
+              <TabsTrigger value="people">People</TabsTrigger>
+              <TabsTrigger value="messages">Messages</TabsTrigger>
+            </TabsList>
+            <TabsContent value="people">
+              <div className="flex flex-col gap-2">
+                {/* <div className="text-md font-semibold">People</div>*/}
+                <p className="text-sm">Receiver</p>
+                <Person person={receiver} />
+                <p className="text-sm">Sender</p>
+                <Person person={sender} />
+              </div>
+            </TabsContent>
+            <TabsContent value="messages">
+              <div className="flex flex-col gap-4">
+                {/* <div className="text-md font-semibold">Messages</div>*/}
+                {Object.values(messages).map((message) => (
+                  <Message
+                    key={message.messageId}
+                    message={message}
+                    person={message.by === 0 ? sender : receiver}
+                  />
+                ))}
+                <Button variant="secondary" onClick={addMessage}>
+                  <PlusIcon /> Message
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </ScrollArea>
       <Separator orientation="vertical" />
@@ -210,14 +228,22 @@ function Message({ message, person }) {
         defaultValue={`${message.by}`}
         onValueChange={(v) => changePerson(v)}
       >
-        <SelectTrigger className="w-1/4">
+        <SelectTrigger className="w-1/4 !h-6 py-3 shadow-none">
           <SelectValue placeholder="by" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value={`${sender.userId}`}>{sender.name}</SelectItem>
+            <SelectItem value={`${sender.userId}`}>
+              <div className="flex text-xs items-center gap-1">
+                <img src={sender.imgUrl} className="h-4"></img>
+                <div>{sender.name}</div>
+              </div>
+            </SelectItem>
             <SelectItem value={`${receiver.userId}`}>
-              {receiver.name}
+              <div className="flex text-xs items-center gap-1">
+                <img src={receiver.imgUrl} className="h-4"></img>
+                <div>{receiver.name}</div>
+              </div>
             </SelectItem>
           </SelectGroup>
         </SelectContent>
@@ -225,27 +251,17 @@ function Message({ message, person }) {
     );
   }
 
-  return (
-    <div className="group flex flex-row gap-4 items-center">
-      <img className="h-12 w-12" src={person.imgUrl}></img>
-      <div className="flex flex-1 flex-col gap-2">
-        <div className="flex justify-between gap-2">
-          <SelectPerson message={message} />
-          <div className="text-xs text-gray-400">
-            <Input
-              placeholder="dd/mm/yyyy hh:mm:ss"
-              value={message.at}
-              onChange={(e) => changeTime(e.target.value)}
-              className=""
-            ></Input>
-          </div>
-          <div className="flex opacity-0 group-hover:opacity-100 transition">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Submit"
-              onClick={pick}
-            >
+  function MessageOptions() {
+    return (
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost">
+            <MoreVerticalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="flex w-fit" align="end">
+          <DropdownMenuItem onSelect={console.log()}>
+            <Button variant="ghost" onClick={pick}>
               <ImageIcon />
               <input
                 ref={inputRef}
@@ -255,20 +271,46 @@ function Message({ message, person }) {
                 onChange={(e) => addImage(e.target.files[0])}
               />
             </Button>
-            <Separator orientation="vertical" />
+          </DropdownMenuItem>
+          <DropdownMenuItem>
             <Button
               variant="ghost"
-              size="icon"
-              aria-label="Submit"
               onClick={() => deleteMessage(message.messageId)}
             >
               <TrashIcon />
             </Button>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  return (
+    <div className="group flex flex-row gap-4 items-center">
+      {/* <img className="h-12 w-12" src={person.imgUrl}></img>*/}
+      <div className="flex flex-1 flex-col gap-1 border p-2 border-gray-100 rounded-sm">
+        <div className="flex justify-between gap-2 items-center">
+          <SelectPerson message={message} />
+          <div className="flex items-center">
+            <div className="text-xs text-gray-400">
+              <Input
+                placeholder="dd/mm/yyyy hh:mm:ss"
+                value={message.at}
+                onChange={(e) => changeTime(e.target.value)}
+                className="!text-xs !h-6 shadow-none border-0 p-0"
+              ></Input>
+            </div>
+            <MessageOptions />
           </div>
+          {/* <div className="flex opacity-0 group-hover:opacity-100 transition">
+
+
+          </div>*/}
         </div>
         <Input
           value={message.text}
           onChange={(e) => changeText(e.target.value)}
+          className="shadow-none border-0 p-0"
         ></Input>
         {message.imgUrl && (
           <div className="relative">

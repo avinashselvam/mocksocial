@@ -12,7 +12,7 @@ export function Top() {
       style={{ backgroundColor: "#f7f7f7" }}
     >
       <ChevronLeftIcon stroke="#007aff" />
-      <div className="flex flex-col text-center">
+      <div className="flex flex-col items-center">
         <img
           className="h-12 w-12 rounded-full object-cover"
           src={receiver.imgUrl}
