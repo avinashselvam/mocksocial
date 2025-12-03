@@ -194,16 +194,18 @@ function Message({ message, person }) {
   const dateRef = useRef();
   const timeRef = useRef();
 
-  function moveUpOrder(messageId) {
+  function getPositionInOrder(messageId) {
     const messageOrder = useStore.getState().messageOrder;
-    const i = messageOrder.find((id) => messageId === id);
+    return messageOrder.findIndex((id) => messageId === id);
+  }
+
+  function moveUpOrder(messageId) {
+    const i = getPositionInOrder(messageId);
     swapOrder(i, i - 1);
   }
 
   function moveDownOrder(messageId) {
-    const messageOrder = useStore.getState().messageOrder;
-    console.log(messageOrder);
-    const i = messageOrder.find((id) => messageId === id);
+    const i = getPositionInOrder(messageId);
     swapOrder(i, i + 1);
   }
 

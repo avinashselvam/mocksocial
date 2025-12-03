@@ -50,7 +50,9 @@ const useStore = create(
         const lastMessageId = s.messageOrder[s.messageOrder.length - 1];
         const newMessageId = Math.max(...s.messageOrder) + 1;
         const lastMessageTimestamp = s.messages[lastMessageId].at;
-        const newMessageTimestamp = new Date(lastMessageTimestamp + 60 * 1000);
+        const newMessageTimestamp = new Date(
+          lastMessageTimestamp.getTime() + 60 * 1000,
+        );
         s.messages[newMessageId] = {
           messageId: newMessageId,
           by: s.messages[lastMessageId].by,
