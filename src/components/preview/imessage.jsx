@@ -1,4 +1,5 @@
 import useStore from "@/store";
+import { getPosition } from "./utils";
 import { ChevronLeftIcon, VideoIcon, PlusCircle, MicIcon } from "lucide-react";
 
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -26,7 +27,7 @@ export function Top() {
 export function Middle() {
   const { sender, receiver, messages, messageOrder } = useStore();
 
-  function Message({ message }) {
+  function Message({ message, position }) {
     const isSent = message.by == 0;
     const color = isSent ? "white" : "black";
     const bgColor = isSent ? "#007aff" : "#e9e8eb";
@@ -46,15 +47,20 @@ export function Middle() {
         >
           {message.imgUrl && (
             <AspectRatio ratio={1} className="overflow-hidden py-2">
-              <img src={message.imgUrl} className="object-cover rounded-2xl" />
+              <img
+                src={message.imgUrl}
+                className="w-full h-full object-cover rounded-2xl"
+              />
             </AspectRatio>
           )}
           <div className="text-sm">{message.text}</div>
-          <img
-            src={tailUrl}
-            className={`absolute ${tailPosition}`}
-            width="16px"
-          />
+          {["single", "last"].includes(position) && (
+            <img
+              src={tailUrl}
+              className={`absolute ${tailPosition}`}
+              width="16px"
+            />
+          )}
         </div>
       </div>
     );
@@ -81,9 +87,15 @@ export function Middle() {
         <div className="text-[10px]  text-gray-400 text-center">
           {formatTime(messages[messageOrder[0]].at)}
         </div>
-        {messageOrder.map((id, idx) => (
-          <Message key={id} message={messages[id]} />
-        ))}
+        {messageOrder.map((id, idx) => {
+          return (
+            <Message
+              key={id}
+              message={messages[id]}
+              position={getPosition(id, idx, messageOrder, messages)}
+            />
+          );
+        })}
       </div>
     </ScrollArea>
   );

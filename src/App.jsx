@@ -142,8 +142,8 @@ export default App;
 
 export function SelectApp() {
   const { setSelectedApp } = useStore();
-  const options = ["Instagram", "Whatsapp", "iMessage", "Hinge"]; //, "Whatsapp", "X"];
-  const icons = ["instagram.svg", "whatsapp.svg", "imessage.svg", "hinge.svg"];
+  const options = ["Instagram", "Whatsapp", "iMessage"]; //, "Whatsapp", "X"];
+  const icons = ["instagram.svg", "whatsapp.svg", "imessage.svg"];
   return (
     <Select defaultValue="iMessage" onValueChange={(v) => setSelectedApp(v)}>
       <SelectTrigger className="w-[180px]">

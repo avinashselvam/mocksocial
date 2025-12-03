@@ -1,4 +1,5 @@
 import useStore from "@/store";
+import { getPosition } from "./utils";
 import {
   ChevronLeftIcon,
   VideoIcon,
@@ -33,12 +34,22 @@ export function Top() {
 export function Middle() {
   const { sender, receiver, messages, messageOrder } = useStore();
 
-  function Message({ message }) {
+  function Message({ message, position }) {
     const isSent = message.by == 0;
     const color = isSent ? "white" : "black";
     const bgColor = isSent ? "#5b51d8" : "#e9e8eb";
     const side1 = isSent ? "items-end" : "items-start";
     const side2 = isSent ? "justify-end" : "justify-start";
+    const roundSide = isSent ? "r" : "l";
+    const map = {
+      single: "",
+      first: isSent ? "rounded-br-sm" : "rounded-bl-sm",
+      middle: isSent
+        ? "rounded-br-sm rounded-tr-sm"
+        : "rounded-bl-sm rounded-tl-sm",
+      last: isSent ? "rounded-tr-sm" : "rounded-tl-sm",
+    };
+    let rounded = map[position];
 
     return (
       <div className={`flex ${side2}`}>
@@ -46,11 +57,11 @@ export function Middle() {
           {message.imgUrl && (
             <img
               src={message.imgUrl}
-              className={`object-contain rounded-2xl max-w-1/2`}
+              className={`w-full h-full object-cover rounded-2xl ${rounded} max-w-1/2`}
             />
           )}
           <div
-            className={`flex rounded-2xl p-3 py-1`}
+            className={`flex rounded-2xl ${rounded} p-3 py-1`}
             style={{ color: color, backgroundColor: bgColor }}
           >
             <div className="text-sm">{message.text}</div>
@@ -77,12 +88,16 @@ export function Middle() {
 
   return (
     <ScrollArea className="h-10/12">
-      <div className="flex flex-col  w-full gap-1 p-4">
+      <div className="flex flex-col  w-full gap-0.5 p-4">
         <div className="text-[10px] font-thin text-gray-600 text-center">
           {formatTime(messages[messageOrder[0]].at)}
         </div>
         {messageOrder.map((id, idx) => (
-          <Message key={id} message={messages[id]} />
+          <Message
+            key={id}
+            message={messages[id]}
+            position={getPosition(id, idx, messageOrder, messages)}
+          />
         ))}
       </div>
     </ScrollArea>
