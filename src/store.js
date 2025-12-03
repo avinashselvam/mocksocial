@@ -20,14 +20,14 @@ const useStore = create(
         by: 0,
         text: "hi",
         imgUrl: null,
-        at: "01/12/2025 09:02:00",
+        at: new Date(),
       },
       1: {
         messageId: 1,
         by: 1,
         text: "hi there",
         imgUrl: null,
-        at: "01/12/2025 09:04:00",
+        at: new Date(Date.now() + 60 * 1000),
       },
     },
     messageOrder: [0, 1],
@@ -35,7 +35,6 @@ const useStore = create(
     inc: () => set((s) => ({ count: s.count + 1 })),
     setSelectedApp: (app) =>
       set((s) => {
-        console.log(app);
         s.selectedApp = app;
       }),
     updatePerson: (person) =>
@@ -48,13 +47,16 @@ const useStore = create(
       }),
     addMessage: () =>
       set((s) => {
+        const lastMessageId = s.messageOrder[s.messageOrder.length - 1];
         const newMessageId = Math.max(...s.messageOrder) + 1;
+        const lastMessageTimestamp = s.messages[lastMessageId].at;
+        const newMessageTimestamp = new Date(lastMessageTimestamp + 60 * 1000);
         s.messages[newMessageId] = {
           messageId: newMessageId,
-          by: 0,
+          by: s.messages[lastMessageId].by,
           text: "new",
           imgUrl: null,
-          at: "01/12/2025 09:02:00",
+          at: newMessageTimestamp,
         };
         s.messageOrder.push(newMessageId);
       }),
@@ -62,6 +64,14 @@ const useStore = create(
       set((s) => {
         delete s.messages[messageId];
         s.messageOrder = s.messageOrder.filter((x) => x !== messageId);
+      }),
+    swapOrder: (i, j) =>
+      set((s) => {
+        if (j < 0 || j > s.messageOrder.length - 1) return;
+        [s.messageOrder[i], s.messageOrder[j]] = [
+          s.messageOrder[j],
+          s.messageOrder[i],
+        ];
       }),
   })),
 );

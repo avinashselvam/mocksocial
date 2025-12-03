@@ -10,6 +10,9 @@ import {
   PenIcon,
   PlusIcon,
   MoreVerticalIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  XIcon,
 } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
@@ -72,7 +75,7 @@ const exampleMessage = {
 };
 
 function App() {
-  const { sender, receiver, messages, addMessage } = useStore();
+  const { sender, receiver, messages, messageOrder, addMessage } = useStore();
   return (
     <div className="flex flex-col lg:flex-row lg:h-screen">
       <ScrollArea>
@@ -110,11 +113,11 @@ function App() {
             <TabsContent value="messages">
               <div className="flex flex-col gap-4">
                 {/* <div className="text-md font-semibold">Messages</div>*/}
-                {Object.values(messages).map((message) => (
+                {messageOrder.map((id) => (
                   <Message
-                    key={message.messageId}
-                    message={message}
-                    person={message.by === 0 ? sender : receiver}
+                    key={id}
+                    message={messages[id]}
+                    person={messages[id].by === 0 ? sender : receiver}
                   />
                 ))}
                 <Button variant="secondary" onClick={addMessage}>
@@ -126,7 +129,7 @@ function App() {
         </div>
       </ScrollArea>
       <Separator orientation="vertical" />
-      <div className="flex flex-col items-center justify-between flex-3 bg-gray-50 p-4 gap-4">
+      <div className="flex flex-col items-center justify-between flex-3 bg-gray-200 p-4 gap-4">
         <Preview />
         <div>
           <Download />
@@ -151,7 +154,7 @@ export function SelectApp() {
           {options.map((option, idx) => (
             <SelectItem key={idx} value={option}>
               <div className="flex items-center gap-2">
-                <img src={icons[idx]} className="h-4" />
+                <img alt="social app icon" src={icons[idx]} className="h-4" />
                 {option}
               </div>
             </SelectItem>
@@ -182,14 +185,27 @@ function Person({ person }) {
 }
 
 function Message({ message, person }) {
-  // const messages = useStore.getState().messages;
   // const people = useStore.getState().people;
-  const { updateMessage, deleteMessage } = useStore();
+  const { updateMessage, deleteMessage, swapOrder } = useStore();
 
   const inputRef = useRef();
   const pick = () => inputRef.current.click();
 
-  function changeOrder() {}
+  const dateRef = useRef();
+  const timeRef = useRef();
+
+  function moveUpOrder(messageId) {
+    const messageOrder = useStore.getState().messageOrder;
+    const i = messageOrder.find((id) => messageId === id);
+    swapOrder(i, i - 1);
+  }
+
+  function moveDownOrder(messageId) {
+    const messageOrder = useStore.getState().messageOrder;
+    console.log(messageOrder);
+    const i = messageOrder.find((id) => messageId === id);
+    swapOrder(i, i + 1);
+  }
 
   function changeText(newText) {
     const newMessage = { ...message, text: newText };
@@ -201,8 +217,12 @@ function Message({ message, person }) {
     updateMessage(newMessage);
   }
 
-  function changeTime(newTime) {
-    const newMessage = { ...message, at: newTime };
+  function changeTime() {
+    const dateValue = dateRef.current.value;
+    const timeValue = timeRef.current.value;
+    const newDate = new Date(`${dateValue}T${timeValue}`);
+    console.log(newDate);
+    const newMessage = { ...message, at: newDate };
     updateMessage(newMessage);
   }
 
@@ -235,13 +255,21 @@ function Message({ message, person }) {
           <SelectGroup>
             <SelectItem value={`${sender.userId}`}>
               <div className="flex text-xs items-center gap-1">
-                <img src={sender.imgUrl} className="h-4"></img>
+                <img
+                  alt="profile picture"
+                  src={sender.imgUrl}
+                  className="h-4"
+                ></img>
                 <div>{sender.name}</div>
               </div>
             </SelectItem>
             <SelectItem value={`${receiver.userId}`}>
               <div className="flex text-xs items-center gap-1">
-                <img src={receiver.imgUrl} className="h-4"></img>
+                <img
+                  alt="profile picture"
+                  src={receiver.imgUrl}
+                  className="h-4"
+                ></img>
                 <div>{receiver.name}</div>
               </div>
             </SelectItem>
@@ -260,7 +288,19 @@ function Message({ message, person }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="flex w-fit" align="end">
-          <DropdownMenuItem onSelect={console.log()}>
+          <div>
+            <Button
+              variant="ghost"
+              onClick={() => moveUpOrder(message.messageId)}
+            >
+              <ChevronUpIcon />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => moveDownOrder(message.messageId)}
+            >
+              <ChevronDownIcon />
+            </Button>
             <Button variant="ghost" onClick={pick}>
               <ImageIcon />
               <input
@@ -268,44 +308,62 @@ function Message({ message, person }) {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => addImage(e.target.files[0])}
+                onChange={(e) => {
+                  console.log(e);
+                  addImage(e.target.files[0]);
+                }}
               />
             </Button>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
+
             <Button
               variant="ghost"
               onClick={() => deleteMessage(message.messageId)}
             >
               <TrashIcon />
             </Button>
-          </DropdownMenuItem>
+          </div>
         </DropdownMenuContent>
       </DropdownMenu>
     );
   }
 
+  function dateToDateString(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function dateToTimeString(d) {
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
+
   return (
     <div className="group flex flex-row gap-4 items-center">
-      {/* <img className="h-12 w-12" src={person.imgUrl}></img>*/}
-      <div className="flex flex-1 flex-col gap-1 border p-2 border-gray-100 rounded-sm">
+      <div className="flex flex-1 flex-col gap-1 border px-2 border-gray-100 rounded-sm">
         <div className="flex justify-between gap-2 items-center">
           <SelectPerson message={message} />
           <div className="flex items-center">
-            <div className="text-xs text-gray-400">
+            <div className="flex text-xs text-gray-400">
               <Input
-                placeholder="dd/mm/yyyy hh:mm:ss"
-                value={message.at}
-                onChange={(e) => changeTime(e.target.value)}
-                className="!text-xs !h-6 shadow-none border-0 p-0"
+                type="date"
+                ref={dateRef}
+                value={dateToDateString(message.at)}
+                onChange={changeTime}
+                className="!text-xs !h-6 shadow-none border-0 p-0 bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+              ></Input>
+              <Input
+                type="time"
+                ref={timeRef}
+                value={dateToTimeString(message.at)}
+                onChange={changeTime}
+                className="!text-xs !h-6 shadow-none border-0 p-0 bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               ></Input>
             </div>
             <MessageOptions />
           </div>
-          {/* <div className="flex opacity-0 group-hover:opacity-100 transition">
-
-
-          </div>*/}
         </div>
         <Input
           value={message.text}
@@ -316,12 +374,16 @@ function Message({ message, person }) {
           <div className="relative">
             <Button
               variant="outline"
-              className="absolute left-1 top-1 opacity-0 group-hover:opacity-100"
+              className="absolute left-1 top-1 w-6 h-6"
               onClick={removeImage}
             >
-              <TrashIcon />
+              <XIcon />
             </Button>
-            <img className="w-1/2 h-1/2" src={message.imgUrl} />
+            <img
+              alt="attached image"
+              className="w-1/2 h-1/2"
+              src={message.imgUrl}
+            />
           </div>
         )}
       </div>
@@ -348,10 +410,12 @@ function Download() {
 
 function Preview() {
   return (
-    <div id="preview" className="w-[360px] items-center  bg-white">
-      <AspectRatio ratio={9 / 16} className="flex flex-col">
-        <Sections />
-      </AspectRatio>
+    <div className="shadow">
+      <div id="preview" className="w-[360px] items-center  bg-white">
+        <AspectRatio ratio={9 / 16} className="flex flex-col">
+          <Sections />
+        </AspectRatio>
+      </div>
     </div>
   );
 }
@@ -408,7 +472,7 @@ function ProfilePicture({ person }) {
 
   return (
     <div className="cursor-pointer h-12 w-12 relative" onClick={pick}>
-      <img src={person.imgUrl} />
+      <img alt="profile picture" src={person.imgUrl} />
       <div className="rounded-full absolute bottom-2 right-0 outline p-1 bg-white">
         <PenIcon size={8} />
       </div>
