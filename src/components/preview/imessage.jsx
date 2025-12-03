@@ -32,10 +32,16 @@ export function Middle() {
     const bgColor = isSent ? "#007aff" : "#e9e8eb";
     const side = isSent ? "justify-end" : "justify-start";
     const widthClass = message.imgUrl ? "w-3/4" : "max-w-3/4";
+    const tailUrl = isSent
+      ? "imessage_callout_sent.svg"
+      : "imessage_callout_received.svg";
+    const tailPosition = isSent
+      ? "right-[-4.5px] bottom-[0px]"
+      : "left-[-4.5px] bottom-[0px]";
     return (
       <div className={`flex ${side}`}>
         <div
-          className={`rounded-2xl p-3 py-1 ${widthClass}`}
+          className={`rounded-2xl p-3 py-1 ${widthClass} relative`}
           style={{ color: color, backgroundColor: bgColor }}
         >
           {message.imgUrl && (
@@ -44,6 +50,11 @@ export function Middle() {
             </AspectRatio>
           )}
           <div className="text-sm">{message.text}</div>
+          <img
+            src={tailUrl}
+            className={`absolute ${tailPosition}`}
+            width="16px"
+          />
         </div>
       </div>
     );

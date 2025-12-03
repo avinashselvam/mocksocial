@@ -142,8 +142,8 @@ export default App;
 
 export function SelectApp() {
   const { setSelectedApp } = useStore();
-  const options = ["Instagram", "Telegram", "iMessage"]; //, "Whatsapp", "X"];
-  const icons = ["instagram.svg", "telegram.svg", "imessage.svg"];
+  const options = ["Instagram", "Whatsapp", "iMessage", "Hinge"]; //, "Whatsapp", "X"];
+  const icons = ["instagram.svg", "whatsapp.svg", "imessage.svg", "hinge.svg"];
   return (
     <Select defaultValue="iMessage" onValueChange={(v) => setSelectedApp(v)}>
       <SelectTrigger className="w-[180px]">
@@ -425,7 +425,7 @@ function Preview() {
 function Sections() {
   const { selectedApp } = useStore();
   switch (selectedApp) {
-    case "Telegram":
+    case "Whatsapp":
       return (
         <>
           <TelegramTop />
